@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import { model } from '@/lib/utils';
 
@@ -7,20 +6,41 @@ const conversationHistories = new Map();
 export async function POST(request) {
   try {
     const { sessionId, message } = await request.json();
-    console.log('sessionId:', sessionId, 'message:', message);
+    console.log('Received request with sessionId:', sessionId, 'and message:', message);
 
+    // Get or initialize conversation history
     let history = conversationHistories.get(sessionId) || [];
 
-    history.push({ role: 'user', content: message });
+    // Update history to use 'parts' property and ensure it is an array
+    history.push({ role: 'user', parts: [message] });
 
-    const chat = model.startChat({ history });
+    // Log the updated history
+    console.log('Updated history:', JSON.stringify(history, null, 2));
 
+    // Start chat with the updated history
+    const chat = model.startChat({
+      history,
+      generationConfig: {
+        maxOutputTokens: 350,
+      },
+    });
+
+    // Log the chat instance
+    console.log('Chat instance created:', chat);
+
+    // Send the message and await the response
     const result = await chat.sendMessage(message);
 
-    history.push({ role: 'assistant', content: result.response.text() });
+    // Log the response
+    console.log('API response:', result);
 
+    // Update history with assistant's response
+    history.push({ role: 'assistant', parts: [result.response.text()] });
+
+    // Save the updated history
     conversationHistories.set(sessionId, history);
 
+    // Return the assistant's response
     return NextResponse.json({ response: result.response.text() });
   } catch (error) {
     console.log('Error:', error);
