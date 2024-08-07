@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server';
-import { model } from '../../lib/utils'; 
+import { model } from '@/lib/utils';
 
 const conversationHistories = new Map();
 

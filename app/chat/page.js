@@ -29,9 +29,16 @@ const ChatPage = () => {
   const [conversation, setConversation] = useState([]);
   const [sessionId, setSessionId] = useState('');
 
+  // useEffect(() => {
+  //   setSessionId(Date.now().toString());
+  // }, []);
+  const [isClient, setIsClient] = useState(false);
+
   useEffect(() => {
     setSessionId(Date.now().toString());
+    setIsClient(true);
   }, []);
+
 
   const handleSendMessage = async () => {
     if (message.trim() === '') return;
