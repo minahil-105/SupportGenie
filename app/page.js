@@ -6,7 +6,7 @@ export default function HomePage() {
   return (
     <Container>
       <Typography variant="h1" gutterBottom>
-        Welcome to the Customer Support Chatbot
+        Welcome to SupportGenie, Your ultimate Custom Chatbot!
       </Typography>
       <Link href="/chat" passHref>
         <Button variant="contained">Go to Chat</Button>

@@ -11,8 +11,8 @@ export async function POST(request) {
     // Get or initialize conversation history
     let history = conversationHistories.get(sessionId) || [];
 
-    // Update history to use 'parts' property and ensure it is an array
-    history.push({ role: 'user', parts: [message] });
+    // Ensure the message is in the correct format
+    history.push({ role: 'user', parts: [{ text: message }] });
 
     // Log the updated history
     console.log('Updated history:', JSON.stringify(history, null, 2));
@@ -26,22 +26,25 @@ export async function POST(request) {
     });
 
     // Log the chat instance
-    console.log('Chat instance created:', chat);
+    //console.log('Chat instance created:', chat);
 
     // Send the message and await the response
     const result = await chat.sendMessage(message);
 
+    // Access the response text correctly
+    const responseText = result.response?.text() || 'No response text available';
+
     // Log the response
-    console.log('API response:', result);
+    console.log('API response:', responseText);
 
     // Update history with assistant's response
-    history.push({ role: 'assistant', parts: [result.response.text()] });
+    history.push({ role: 'model', parts: [{ text: responseText }] });
 
     // Save the updated history
     conversationHistories.set(sessionId, history);
 
     // Return the assistant's response
-    return NextResponse.json({ response: result.response.text() });
+    return NextResponse.json({ response: responseText });
   } catch (error) {
     console.log('Error:', error);
     return NextResponse.json({ error: 'Error processing your request' }, { status: 500 });

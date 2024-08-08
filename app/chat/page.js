@@ -1,106 +1,91 @@
 
 'use client';
+import { useState } from 'react';
+import { Container, Typography, TextField, Button, Paper, List, ListItem, ListItemText, CssBaseline } from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-import { useState, useEffect } from 'react';
-import { Container, Typography, TextField, Button, Paper, List, ListItem, ListItemText } from '@mui/material';
-import { styled } from '@mui/material/styles';
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#90caf9',
+    },
+    background: {
+      default: '#121212',
+      paper: '#1d1d1d',
+    },
+    text: {
+      primary: '#ffffff',
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto Mono", monospace',
+    h3: {
+      fontWeight: 'bold',
+      color: '#90caf9',
+    },
+    body1: {
+      fontSize: '1.1rem',
+    },
+  },
+});
 
-const StyledContainer = styled(Container)(({ theme }) => ({
-  marginTop: theme.spacing(4),
-}));
-
-const ChatBox = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  marginBottom: theme.spacing(2),
-  maxHeight: '400px',
-  overflow: 'auto',
-}));
-
-const InputField = styled(TextField)(({ theme }) => ({
-  marginTop: theme.spacing(2),
-}));
-
-const SendButton = styled(Button)(({ theme }) => ({
-  marginTop: theme.spacing(2),
-}));
-
-const ChatPage = () => {
-  const [message, setMessage] = useState('');
-  const [conversation, setConversation] = useState([]);
-  const [sessionId, setSessionId] = useState('');
-
-  // useEffect(() => {
-  //   setSessionId(Date.now().toString());
-  // }, []);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setSessionId(Date.now().toString());
-    setIsClient(true);
-  }, []);
-
+export default function ChatPage() {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
 
   const handleSendMessage = async () => {
-    if (message.trim() === '') return;
+    if (input.trim()) {
+      const newMessages = [...messages, { sender: 'You', text: input }];
+      setMessages(newMessages);
+      setInput('');
 
-    setConversation([...conversation, { role: 'user', content: message }]);
-
-    try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ sessionId, message }),
+        body: JSON.stringify({ message: input, sessionId: 'your-session-id' }),
       });
-
       const data = await response.json();
-      setConversation((prevConversation) => [
-        ...prevConversation,
-        { role: 'user', content: message },
-        { role: 'assistant', content: data.response },
-      ]);
-    } catch (error) {
-      console.error('Error sending message:', error);
+      setMessages([...newMessages, { sender: 'AI', text: data.response }]);
     }
-
-    setMessage('');
   };
 
   return (
-    <StyledContainer>
-      <Typography variant="h4" gutterBottom>
-        AI Chatbot
-      </Typography>
-      <ChatBox>
-        <List>
-          {conversation.map((msg, index) => (
-            <ListItem key={index}>
-              <ListItemText
-                primary={msg.role === 'user' ? 'You' : 'AI'}
-                secondary={msg.content}
-              />
-            </ListItem>
-          ))}
-        </List>
-      </ChatBox>
-      <InputField
-        label="Your Message"
-        variant="outlined"
-        fullWidth
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-      />
-      <SendButton
-        variant="contained"
-        color="primary"
-        onClick={handleSendMessage}
-      >
-        Send
-      </SendButton>
-    </StyledContainer>
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <Container maxWidth="md" style={{ marginTop: '2rem' }}>
+        <Typography variant="h3" gutterBottom align="center">
+          AI Chatbot
+        </Typography>
+        <Paper style={{ padding: '1rem', marginBottom: '1rem' }}>
+          <List style={{ maxHeight: '50vh', overflow: 'auto' }}>
+            {messages.map((message, index) => (
+              <ListItem key={index}>
+                <ListItemText
+                  primary={message.sender}
+                  secondary={message.text}
+                  primaryTypographyProps={{ style: { fontWeight: 'bold', color: '#90caf9' } }}
+                  secondaryTypographyProps={{ style: { color: '#ffffff' } }}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
+        <TextField
+          variant="outlined"
+          fullWidth
+          placeholder="Your Message"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+          style={{ marginBottom: '1rem' }}
+        />
+        <Button variant="contained" color="primary" fullWidth onClick={handleSendMessage}>
+          SEND
+        </Button>
+      </Container>
+    </ThemeProvider>
   );
-};
-
-export default ChatPage;
+}
