@@ -1,8 +1,8 @@
-
 'use client';
 import { useState } from 'react';
-import { Container, Typography, TextField, Button, Paper, List, ListItem, ListItemText, CssBaseline } from '@mui/material';
+import { Container, Typography, TextField, Button, Paper, List, ListItem, ListItemText, CssBaseline, IconButton } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 
 const darkTheme = createTheme({
   palette: {
@@ -40,6 +40,7 @@ export default function ChatPage() {
       setMessages(newMessages);
       setInput('');
 
+      console.log("sending response------")
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -85,6 +86,13 @@ export default function ChatPage() {
         <Button variant="contained" color="primary" fullWidth onClick={handleSendMessage}>
           SEND
         </Button>
+        {/* Example of using icons */}
+        <IconButton>
+          <ChevronLeft />
+        </IconButton>
+        <IconButton>
+          <ChevronRight />
+        </IconButton>
       </Container>
     </ThemeProvider>
   );
